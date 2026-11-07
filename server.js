@@ -652,7 +652,7 @@ app.post(['/api/orders/buy', '/orders/buy'], (req, res) => {
 });
 
 // Track Order publicly with Order Code & Phone
-app.get('/api/orders/track', (req, res) => {
+app.get(['/api/orders/track', '/orders/track'], (req, res) => {
   try {
     const { code, phone } = req.query;
     if (!code) {
@@ -691,7 +691,7 @@ app.get('/api/orders/track', (req, res) => {
 });
 
 // User's own orders
-app.get('/api/user/orders', requireUser, (req, res) => {
+app.get(['/api/user/orders', '/user/orders'], requireUser, (req, res) => {
   try {
     const userId = req.session.user.id;
     const userEmail = req.session.user.email;
@@ -717,7 +717,7 @@ app.get('/api/user/orders', requireUser, (req, res) => {
 // ==========================================
 
 // Get all client orders for Admin Dashboard
-app.get('/api/admin/orders', requireAdmin, (req, res) => {
+app.get(['/api/admin/orders', '/admin/orders'], requireAdmin, (req, res) => {
   try {
     const { status, search } = req.query;
     let query = `
@@ -750,7 +750,7 @@ app.get('/api/admin/orders', requireAdmin, (req, res) => {
 });
 
 // Export Orders to CSV for Postal / Courier Dispatch
-app.get('/api/admin/orders/export/csv', requireAdmin, (req, res) => {
+app.get(['/api/admin/orders/export/csv', '/admin/orders/export/csv'], requireAdmin, (req, res) => {
   try {
     const orders = db.prepare(`
       SELECT 
@@ -808,7 +808,7 @@ app.get('/api/admin/orders/export/csv', requireAdmin, (req, res) => {
 });
 
 // Admin Update Order Status
-app.put('/api/admin/orders/:id/status', requireAdmin, (req, res) => {
+app.put(['/api/admin/orders/:id/status', '/admin/orders/:id/status'], requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
