@@ -2,34 +2,90 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
 
-// Determine writable database path (on Vercel/serverless only /tmp is writable)
 const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const postgresUrl = process.env.POSTGRES_PRISMA_URL
+  || process.env.POSTGRES_URL
+  || process.env.POSTGRES_URL_NON_POOLING
+  || process.env.DATABASE_URL;
 const dbDir = isServerless ? '/tmp' : path.join(__dirname, '..');
 const dbPath = path.join(dbDir, 'tribal_store.db');
 const jsonBackupPath = path.join(dbDir, 'tribal_store_data.json');
 
 let dbInstance = null;
 let isFallbackMode = false;
+let isPostgresMode = false;
 
-// Attempt to load native node:sqlite
-try {
-  const { DatabaseSync } = require('node:sqlite');
-  dbInstance = new DatabaseSync(dbPath);
-  try {
-    dbInstance.exec('PRAGMA journal_mode = WAL;');
-    dbInstance.exec('PRAGMA foreign_keys = ON;');
-  } catch (e) {
-    // Some serverless environments restrict PRAGMA WAL
+if (postgresUrl) {
+  const { Pool } = require('pg');
+  const pool = new Pool({
+    connectionString: postgresUrl,
+    max: 1,
+    ssl: { rejectUnauthorized: true }
+  });
+  dbInstance = createPostgresDatabase(pool);
+  isPostgresMode = true;
+  console.log('✔ Using Supabase PostgreSQL database');
+} else {
+  if (isServerless) {
+    throw new Error('Persistent database is not configured. Set POSTGRES_PRISMA_URL or POSTGRES_URL_NON_POOLING in Vercel.');
   }
-  console.log(`✔ Using SQLite engine at: ${dbPath}`);
-} catch (sqliteErr) {
-  console.warn('⚠️ Native node:sqlite not available or restricted. Activating robust in-memory JSON store.');
-  isFallbackMode = true;
-  dbInstance = createFallbackDatabase(jsonBackupPath);
+
+  try {
+    const { DatabaseSync } = require('node:sqlite');
+    dbInstance = new DatabaseSync(dbPath);
+    try {
+      dbInstance.exec('PRAGMA journal_mode = WAL;');
+      dbInstance.exec('PRAGMA foreign_keys = ON;');
+    } catch (e) {
+      // Some environments restrict SQLite PRAGMA settings.
+    }
+    console.log(`✔ Using SQLite engine at: ${dbPath}`);
+  } catch (sqliteErr) {
+    console.warn('⚠️ Native node:sqlite not available or restricted. Activating in-memory JSON store for local development.');
+    isFallbackMode = true;
+    dbInstance = createFallbackDatabase(jsonBackupPath);
+  }
+}
+
+function createPostgresDatabase(pool) {
+  return {
+    async exec(sql) {
+      await pool.query(sql);
+    },
+    prepare(sql) {
+      const cleanSql = sql.trim();
+      const query = cleanSql.replace(/\?/g, (() => {
+        let index = 0;
+        return () => `$${++index}`;
+      })());
+      const isInsert = /^\s*INSERT\s+INTO/i.test(cleanSql);
+      const queryWithReturning = isInsert && !/\bRETURNING\b/i.test(query)
+        ? `${query} RETURNING id`
+        : query;
+
+      return {
+        async run(...params) {
+          const result = await pool.query(queryWithReturning, params);
+          return {
+            lastInsertRowid: result.rows[0] ? result.rows[0].id : undefined,
+            changes: result.rowCount
+          };
+        },
+        async get(...params) {
+          const result = await pool.query(query, params);
+          return result.rows[0] || null;
+        },
+        async all(...params) {
+          const result = await pool.query(query, params);
+          return result.rows;
+        }
+      };
+    }
+  };
 }
 
 // ========================================================
-// FALLBACK MEMORY + JSON ENGINE (Guarantees zero crashes on Vercel)
+// Fallback memory + JSON engine (local development only)
 // ========================================================
 function createFallbackDatabase(persistenceFile) {
   let memoryData = {
@@ -51,11 +107,7 @@ function createFallbackDatabase(persistenceFile) {
   }
 
   function persist() {
-    try {
-      fs.writeFileSync(persistenceFile, JSON.stringify(memoryData, null, 2), 'utf8');
-    } catch (e) {
-      // Ignored if /tmp is ephemeral
-    }
+    fs.writeFileSync(persistenceFile, JSON.stringify(memoryData, null, 2), 'utf8');
   }
 
   return {
@@ -482,6 +534,10 @@ function createFallbackDatabase(persistenceFile) {
 
 // Initialize tables and pre-seed
 function initDb() {
+  if (isPostgresMode) {
+    return initPostgresDb();
+  }
+
   if (!isFallbackMode && dbInstance) {
     dbInstance.exec(`
       CREATE TABLE IF NOT EXISTS admins (
@@ -566,6 +622,89 @@ function initDb() {
   const countRow = dbInstance.prepare('SELECT COUNT(*) as count FROM products').get();
   if (!countRow || countRow.count === 0) {
     seedTribalProducts();
+  }
+}
+
+async function initPostgresDb() {
+  await dbInstance.exec(`
+    CREATE TABLE IF NOT EXISTS admins (
+      id SERIAL PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      name TEXT DEFAULT 'Admin',
+      role TEXT DEFAULT 'superadmin',
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      phone TEXT,
+      password_hash TEXT NOT NULL,
+      address TEXT,
+      city TEXT,
+      state TEXT,
+      pincode TEXT,
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS products (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      category TEXT NOT NULL,
+      price DOUBLE PRECISION NOT NULL,
+      stock INTEGER DEFAULT 10,
+      description TEXT NOT NULL,
+      image_url TEXT NOT NULL,
+      artisan_name TEXT NOT NULL,
+      artisan_tribe TEXT NOT NULL,
+      artisan_location TEXT NOT NULL,
+      craft_heritage TEXT,
+      is_featured INTEGER DEFAULT 0,
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS orders (
+      id SERIAL PRIMARY KEY,
+      order_code TEXT UNIQUE NOT NULL,
+      user_id INTEGER,
+      client_name TEXT NOT NULL,
+      client_phone TEXT NOT NULL,
+      client_email TEXT NOT NULL,
+      client_address TEXT NOT NULL,
+      client_city TEXT,
+      client_state TEXT,
+      client_pincode TEXT,
+      client_notes TEXT,
+      product_id INTEGER NOT NULL,
+      product_title TEXT NOT NULL,
+      product_price DOUBLE PRECISION NOT NULL,
+      quantity INTEGER DEFAULT 1,
+      total_amount DOUBLE PRECISION NOT NULL,
+      status TEXT DEFAULT 'Pending',
+      admin_notes TEXT DEFAULT '',
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  const existingAdmin = await dbInstance.prepare('SELECT * FROM admins WHERE email = ?').get('danialrenson@gmail.com');
+  if (!existingAdmin) {
+    const passwordHash = bcrypt.hashSync('danial', bcrypt.genSaltSync(10));
+    await dbInstance.prepare(`
+      INSERT INTO admins (email, password_hash, name, role)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT (email) DO NOTHING
+    `).run('danialrenson@gmail.com', passwordHash, 'Danial Renson', 'superadmin');
+  }
+
+  const countRow = await dbInstance.prepare('SELECT COUNT(*) as count FROM products').get();
+  if (Number(countRow.count) === 0) {
+    await seedTribalProducts();
   }
 }
 
@@ -684,8 +823,7 @@ function seedTribalProducts() {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  for (const item of seedItems) {
-    insert.run(
+  const insertProduct = (item) => insert.run(
       item.title,
       item.category,
       item.price,
@@ -697,12 +835,22 @@ function seedTribalProducts() {
       item.artisan_location,
       item.craft_heritage,
       item.is_featured
-    );
+  );
+
+  if (isPostgresMode) {
+    return Promise.all(seedItems.map(insertProduct)).then(() => {
+      console.log(`✔ Seeded ${seedItems.length} authentic tribal community products`);
+    });
+  }
+
+  for (const item of seedItems) {
+    insertProduct(item);
   }
   console.log(`✔ Seeded ${seedItems.length} authentic tribal community products`);
 }
 
 module.exports = {
   db: dbInstance,
-  initDb
+  initDb,
+  createPostgresDatabase
 };

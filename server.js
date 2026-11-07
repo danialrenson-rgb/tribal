@@ -6,11 +6,9 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const { db, initDb } = require('./src/db');
 
-// Initialize database & tables
-initDb();
-
 const app = express();
 const PORT = process.env.PORT || 3000;
+const dbReady = Promise.resolve().then(initDb);
 
 // Ensure uploads folder exists
 const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
@@ -97,13 +95,20 @@ function requireUser(req, res, next) {
   return res.status(401).json({ success: false, message: 'User login required.' });
 }
 
+app.use((req, res, next) => {
+  dbReady.then(() => next()).catch((err) => {
+    console.error('Database initialization failed:', err);
+    res.status(503).json({ success: false, message: 'Database is unavailable. Please try again later.' });
+  });
+});
+
 // ==========================================
 // ADMIN AUTHENTICATION ROUTES
 // ==========================================
 
 // Admin Login
 // Default: danialrenson@gmail.com / danial
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -111,7 +116,7 @@ app.post('/api/admin/login', (req, res) => {
     }
 
     const trimmedEmail = email.trim().toLowerCase();
-    const admin = db.prepare('SELECT * FROM admins WHERE email = ?').get(trimmedEmail);
+    const admin = await db.prepare('SELECT * FROM admins WHERE email = ?').get(trimmedEmail);
 
     if (!admin) {
       return res.status(401).json({ success: false, message: 'Invalid admin email or password.' });
@@ -145,19 +150,24 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 // Admin Get Current Session
-app.get('/api/admin/me', (req, res) => {
-  if (req.session && req.session.admin) {
-    const admin = db.prepare('SELECT id, email, name, role, updated_at FROM admins WHERE id = ?').get(req.session.admin.id);
-    if (admin) {
-      return res.json({ success: true, admin });
+app.get('/api/admin/me', async (req, res) => {
+  try {
+    if (req.session && req.session.admin) {
+      const admin = await db.prepare('SELECT id, email, name, role, updated_at FROM admins WHERE id = ?').get(req.session.admin.id);
+      if (admin) {
+        return res.json({ success: true, admin });
+      }
     }
+    return res.status(401).json({ success: false, message: 'Not logged in as admin.' });
+  } catch (err) {
+    console.error('Get admin session error:', err);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve admin session.' });
   }
-  return res.status(401).json({ success: false, message: 'Not logged in as admin.' });
 });
 
 // Admin Change Password
 // Requirement: admin can change password at any time using change password
-app.post('/api/admin/change-password', requireAdmin, (req, res) => {
+app.post('/api/admin/change-password', requireAdmin, async (req, res) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;
     const adminId = req.session.admin.id;
@@ -174,7 +184,7 @@ app.post('/api/admin/change-password', requireAdmin, (req, res) => {
       return res.status(400).json({ success: false, message: 'New password must be at least 4 characters long.' });
     }
 
-    const admin = db.prepare('SELECT * FROM admins WHERE id = ?').get(adminId);
+    const admin = await db.prepare('SELECT * FROM admins WHERE id = ?').get(adminId);
     if (!admin) {
       return res.status(404).json({ success: false, message: 'Admin record not found.' });
     }
@@ -189,7 +199,7 @@ app.post('/api/admin/change-password', requireAdmin, (req, res) => {
     const salt = bcrypt.genSaltSync(10);
     const newHash = bcrypt.hashSync(newPassword, salt);
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE admins 
       SET password_hash = ?, updated_at = CURRENT_TIMESTAMP 
       WHERE id = ?
@@ -216,7 +226,7 @@ app.post('/api/admin/logout', (req, res) => {
 // ==========================================
 
 // User Register
-app.post('/api/user/register', (req, res) => {
+app.post('/api/user/register', async (req, res) => {
   try {
     const { name, email, phone, password, address, city, state, pincode } = req.body;
 
@@ -225,7 +235,7 @@ app.post('/api/user/register', (req, res) => {
     }
 
     const trimmedEmail = email.trim().toLowerCase();
-    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(trimmedEmail);
+    const existing = await db.prepare('SELECT id FROM users WHERE email = ?').get(trimmedEmail);
     if (existing) {
       return res.status(400).json({ success: false, message: 'An account with this email already exists.' });
     }
@@ -233,7 +243,7 @@ app.post('/api/user/register', (req, res) => {
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(password, salt);
 
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO users (name, email, phone, password_hash, address, city, state, pincode)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(name.trim(), trimmedEmail, phone || '', hash, address || '', city || '', state || '', pincode || '');
@@ -257,7 +267,7 @@ app.post('/api/user/register', (req, res) => {
 });
 
 // User Login
-app.post('/api/user/login', (req, res) => {
+app.post('/api/user/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -265,7 +275,7 @@ app.post('/api/user/login', (req, res) => {
     }
 
     const trimmedEmail = email.trim().toLowerCase();
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(trimmedEmail);
+    const user = await db.prepare('SELECT * FROM users WHERE email = ?').get(trimmedEmail);
 
     if (!user || !bcrypt.compareSync(password, user.password_hash)) {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
@@ -299,23 +309,28 @@ app.post('/api/user/login', (req, res) => {
 });
 
 // User Get Current Profile
-app.get('/api/user/me', (req, res) => {
-  if (req.session && req.session.user) {
-    const user = db.prepare('SELECT id, name, email, phone, address, city, state, pincode, created_at FROM users WHERE id = ?').get(req.session.user.id);
-    if (user) {
-      return res.json({ success: true, user });
+app.get('/api/user/me', async (req, res) => {
+  try {
+    if (req.session && req.session.user) {
+      const user = await db.prepare('SELECT id, name, email, phone, address, city, state, pincode, created_at FROM users WHERE id = ?').get(req.session.user.id);
+      if (user) {
+        return res.json({ success: true, user });
+      }
     }
+    return res.status(401).json({ success: false, message: 'Not logged in.' });
+  } catch (err) {
+    console.error('Get user session error:', err);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve user session.' });
   }
-  return res.status(401).json({ success: false, message: 'Not logged in.' });
 });
 
 // User Update Profile
-app.put('/api/user/profile', requireUser, (req, res) => {
+app.put('/api/user/profile', requireUser, async (req, res) => {
   try {
     const { name, phone, address, city, state, pincode } = req.body;
     const userId = req.session.user.id;
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE users 
       SET name = COALESCE(?, name),
           phone = COALESCE(?, phone),
@@ -348,7 +363,7 @@ app.post('/api/user/logout', (req, res) => {
 // ==========================================
 
 // Get All Products (with filters)
-app.get('/api/products', (req, res) => {
+app.get('/api/products', async (req, res) => {
   try {
     const { category, search, featured, sort } = req.query;
     let query = 'SELECT * FROM products WHERE 1=1';
@@ -377,10 +392,11 @@ app.get('/api/products', (req, res) => {
       query += ' ORDER BY id DESC';
     }
 
-    const products = db.prepare(query).all(...params);
+    const products = await db.prepare(query).all(...params);
 
     // Also get distinct categories
-    const categories = db.prepare('SELECT DISTINCT category FROM products ORDER BY category ASC').all().map(c => c.category);
+    const categoryRows = await db.prepare('SELECT DISTINCT category FROM products ORDER BY category ASC').all();
+    const categories = categoryRows.map(c => c.category);
 
     return res.json({ success: true, products, categories });
   } catch (err) {
@@ -390,9 +406,9 @@ app.get('/api/products', (req, res) => {
 });
 
 // Get Single Product
-app.get('/api/products/:id', (req, res) => {
+app.get('/api/products/:id', async (req, res) => {
   try {
-    const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
+    const product = await db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
@@ -404,7 +420,7 @@ app.get('/api/products/:id', (req, res) => {
 });
 
 // Admin Add Product
-app.post('/api/admin/products', requireAdmin, (req, res) => {
+app.post('/api/admin/products', requireAdmin, async (req, res) => {
   try {
     const {
       title,
@@ -424,7 +440,7 @@ app.post('/api/admin/products', requireAdmin, (req, res) => {
       return res.status(400).json({ success: false, message: 'Title, category, price, and description are required.' });
     }
 
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO products (
         title, category, price, stock, description, image_url,
         artisan_name, artisan_tribe, artisan_location, craft_heritage, is_featured
@@ -455,7 +471,7 @@ app.post('/api/admin/products', requireAdmin, (req, res) => {
 });
 
 // Admin Update Product
-app.put('/api/admin/products/:id', requireAdmin, (req, res) => {
+app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -472,12 +488,12 @@ app.put('/api/admin/products/:id', requireAdmin, (req, res) => {
       is_featured
     } = req.body;
 
-    const existing = db.prepare('SELECT id FROM products WHERE id = ?').get(id);
+    const existing = await db.prepare('SELECT id FROM products WHERE id = ?').get(id);
     if (!existing) {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE products SET
         title = COALESCE(?, title),
         category = COALESCE(?, category),
@@ -515,15 +531,15 @@ app.put('/api/admin/products/:id', requireAdmin, (req, res) => {
 });
 
 // Admin Delete Product
-app.delete('/api/admin/products/:id', requireAdmin, (req, res) => {
+app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const existing = db.prepare('SELECT id FROM products WHERE id = ?').get(id);
+    const existing = await db.prepare('SELECT id FROM products WHERE id = ?').get(id);
     if (!existing) {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
 
-    db.prepare('DELETE FROM products WHERE id = ?').run(id);
+    await db.prepare('DELETE FROM products WHERE id = ?').run(id);
     return res.json({ success: true, message: 'Product deleted from store catalog.' });
   } catch (err) {
     console.error('Delete product error:', err);
@@ -553,7 +569,7 @@ app.post('/api/admin/upload', requireAdmin, upload.single('image'), (req, res) =
 // ==========================================
 
 // Create Buy Order / Inquiry
-app.post('/api/orders/buy', (req, res) => {
+app.post('/api/orders/buy', async (req, res) => {
   try {
     const {
       product_id,
@@ -586,7 +602,7 @@ app.post('/api/orders/buy', (req, res) => {
     }
 
     // Verify product exists and fetch details
-    const product = db.prepare('SELECT * FROM products WHERE id = ?').get(product_id);
+    const product = await db.prepare('SELECT * FROM products WHERE id = ?').get(product_id);
     if (!product) {
       return res.status(404).json({ success: false, message: 'The selected product was not found.' });
     }
@@ -610,7 +626,7 @@ app.post('/api/orders/buy', (req, res) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending')
     `);
 
-    const result = insertStmt.run(
+    const result = await insertStmt.run(
       orderCode,
       userId,
       client_name.trim(),
@@ -628,7 +644,7 @@ app.post('/api/orders/buy', (req, res) => {
       totalAmount
     );
 
-    const createdOrder = db.prepare('SELECT * FROM orders WHERE id = ?').get(result.lastInsertRowid);
+    const createdOrder = await db.prepare('SELECT * FROM orders WHERE id = ?').get(result.lastInsertRowid);
 
     console.log(`📦 [NEW CLIENT ORDER INQUIRY] Code: ${orderCode} | Client: ${client_name} (${client_phone}, ${client_email}) | Product: "${product.title}" (Qty: ${qty}, Rs.${totalAmount})`);
 
@@ -664,7 +680,7 @@ app.post('/api/orders/buy', (req, res) => {
 });
 
 // Track Order publicly with Order Code & Phone
-app.get('/api/orders/track', (req, res) => {
+app.get('/api/orders/track', async (req, res) => {
   try {
     const { code, phone } = req.query;
     if (!code) {
@@ -679,13 +695,13 @@ app.get('/api/orders/track', (req, res) => {
       params.push(`%${phone.trim()}%`, `%${phone.trim()}%`);
     }
 
-    const order = db.prepare(query).get(...params);
+    const order = await db.prepare(query).get(...params);
     if (!order) {
       return res.status(404).json({ success: false, message: 'No matching order found. Please check your order code.' });
     }
 
     // Get product info
-    const product = db.prepare('SELECT image_url, artisan_name, artisan_tribe, artisan_location FROM products WHERE id = ?').get(order.product_id);
+    const product = await db.prepare('SELECT image_url, artisan_name, artisan_tribe, artisan_location FROM products WHERE id = ?').get(order.product_id);
 
     return res.json({
       success: true,
@@ -703,13 +719,13 @@ app.get('/api/orders/track', (req, res) => {
 });
 
 // User's own orders
-app.get('/api/user/orders', requireUser, (req, res) => {
+app.get('/api/user/orders', requireUser, async (req, res) => {
   try {
     const userId = req.session.user.id;
     const userEmail = req.session.user.email;
 
     // Fetch orders tied by user_id or matching email
-    const orders = db.prepare(`
+    const orders = await db.prepare(`
       SELECT o.*, p.image_url as product_image, p.artisan_name, p.artisan_tribe
       FROM orders o
       LEFT JOIN products p ON o.product_id = p.id
@@ -729,7 +745,7 @@ app.get('/api/user/orders', requireUser, (req, res) => {
 // ==========================================
 
 // Get all client orders for Admin Dashboard
-app.get('/api/admin/orders', requireAdmin, (req, res) => {
+app.get('/api/admin/orders', requireAdmin, async (req, res) => {
   try {
     const { status, search } = req.query;
     let query = `
@@ -753,7 +769,7 @@ app.get('/api/admin/orders', requireAdmin, (req, res) => {
 
     query += ' ORDER BY o.id DESC';
 
-    const orders = db.prepare(query).all(...params);
+    const orders = await db.prepare(query).all(...params);
     return res.json({ success: true, orders });
   } catch (err) {
     console.error('Admin get orders error:', err);
@@ -762,9 +778,9 @@ app.get('/api/admin/orders', requireAdmin, (req, res) => {
 });
 
 // Export Orders to CSV for Postal / Courier Dispatch
-app.get('/api/admin/orders/export/csv', requireAdmin, (req, res) => {
+app.get('/api/admin/orders/export/csv', requireAdmin, async (req, res) => {
   try {
-    const orders = db.prepare(`
+    const orders = await db.prepare(`
       SELECT 
         o.order_code, o.created_at, o.client_name, o.client_phone, o.client_email,
         o.client_address, o.client_city, o.client_state, o.client_pincode,
@@ -820,7 +836,7 @@ app.get('/api/admin/orders/export/csv', requireAdmin, (req, res) => {
 });
 
 // Admin Update Order Status
-app.put('/api/admin/orders/:id/status', requireAdmin, (req, res) => {
+app.put('/api/admin/orders/:id/status', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -830,7 +846,7 @@ app.put('/api/admin/orders/:id/status', requireAdmin, (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid status value.' });
     }
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE orders 
       SET status = ?, updated_at = CURRENT_TIMESTAMP 
       WHERE id = ?
@@ -844,12 +860,12 @@ app.put('/api/admin/orders/:id/status', requireAdmin, (req, res) => {
 });
 
 // Admin Add / Update Note on Order
-app.put('/api/admin/orders/:id/note', requireAdmin, (req, res) => {
+app.put('/api/admin/orders/:id/note', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { note } = req.body;
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE orders 
       SET admin_notes = ?, updated_at = CURRENT_TIMESTAMP 
       WHERE id = ?
@@ -863,10 +879,10 @@ app.put('/api/admin/orders/:id/note', requireAdmin, (req, res) => {
 });
 
 // Admin Delete Order
-app.delete('/api/admin/orders/:id', requireAdmin, (req, res) => {
+app.delete('/api/admin/orders/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    db.prepare('DELETE FROM orders WHERE id = ?').run(id);
+    await db.prepare('DELETE FROM orders WHERE id = ?').run(id);
     return res.json({ success: true, message: 'Order record deleted.' });
   } catch (err) {
     console.error('Delete order error:', err);
@@ -875,21 +891,21 @@ app.delete('/api/admin/orders/:id', requireAdmin, (req, res) => {
 });
 
 // Admin Dashboard Summary Metrics / Analytics
-app.get('/api/admin/stats', requireAdmin, (req, res) => {
+app.get('/api/admin/stats', requireAdmin, async (req, res) => {
   try {
-    const totalOrders = db.prepare('SELECT COUNT(*) as count FROM orders').get().count;
-    const pendingOrders = db.prepare("SELECT COUNT(*) as count FROM orders WHERE status = 'Pending'").get().count;
-    const contactedOrders = db.prepare("SELECT COUNT(*) as count FROM orders WHERE status = 'Contacted'").get().count;
-    const confirmedOrders = db.prepare("SELECT COUNT(*) as count FROM orders WHERE status = 'Order Confirmed'").get().count;
-    const dispatchedOrders = db.prepare("SELECT COUNT(*) as count FROM orders WHERE status IN ('Dispatched', 'Delivered')").get().count;
+    const totalOrders = Number((await db.prepare('SELECT COUNT(*) as count FROM orders').get()).count);
+    const pendingOrders = Number((await db.prepare("SELECT COUNT(*) as count FROM orders WHERE status = 'Pending'").get()).count);
+    const contactedOrders = Number((await db.prepare("SELECT COUNT(*) as count FROM orders WHERE status = 'Contacted'").get()).count);
+    const confirmedOrders = Number((await db.prepare("SELECT COUNT(*) as count FROM orders WHERE status = 'Order Confirmed'").get()).count);
+    const dispatchedOrders = Number((await db.prepare("SELECT COUNT(*) as count FROM orders WHERE status IN ('Dispatched', 'Delivered')").get()).count);
     
-    const revenueRow = db.prepare("SELECT SUM(total_amount) as total FROM orders WHERE status != 'Cancelled'").get();
+    const revenueRow = await db.prepare("SELECT SUM(total_amount) as total FROM orders WHERE status != 'Cancelled'").get();
     const totalRevenue = revenueRow && revenueRow.total ? revenueRow.total : 0;
 
-    const totalProducts = db.prepare('SELECT COUNT(*) as count FROM products').get().count;
-    const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
+    const totalProducts = Number((await db.prepare('SELECT COUNT(*) as count FROM products').get()).count);
+    const totalUsers = Number((await db.prepare('SELECT COUNT(*) as count FROM users').get()).count);
 
-    const recentOrders = db.prepare(`
+    const recentOrders = await db.prepare(`
       SELECT o.id, o.order_code, o.client_name, o.client_phone, o.client_email, o.product_title, o.total_amount, o.status, o.created_at
       FROM orders o
       ORDER BY o.id DESC
@@ -941,4 +957,3 @@ if (!process.env.VERCEL && require.main === module) {
 }
 
 module.exports = app;
-
