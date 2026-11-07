@@ -52,6 +52,18 @@ const upload = multer({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Vercel serverless path normalizer (ensures /products or /api/products always resolve)
+app.use((req, res, next) => {
+  if (!req.url.startsWith('/api') && !req.url.includes('.')) {
+    const apiRoots = ['products', 'orders', 'admin', 'user'];
+    const firstSegment = req.url.split('?')[0].split('/')[1];
+    if (apiRoots.includes(firstSegment)) {
+      req.url = '/api' + req.url;
+    }
+  }
+  next();
+});
+
 // Session management
 app.use(
   session({
@@ -91,7 +103,7 @@ function requireUser(req, res, next) {
 
 // Admin Login
 // Default: danialrenson@gmail.com / danial
-app.post(['/api/admin/login', '/admin/login'], (req, res) => {
+app.post('/api/admin/login', (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -133,7 +145,7 @@ app.post(['/api/admin/login', '/admin/login'], (req, res) => {
 });
 
 // Admin Get Current Session
-app.get(['/api/admin/me', '/admin/me'], (req, res) => {
+app.get('/api/admin/me', (req, res) => {
   if (req.session && req.session.admin) {
     const admin = db.prepare('SELECT id, email, name, role, updated_at FROM admins WHERE id = ?').get(req.session.admin.id);
     if (admin) {
@@ -145,7 +157,7 @@ app.get(['/api/admin/me', '/admin/me'], (req, res) => {
 
 // Admin Change Password
 // Requirement: admin can change password at any time using change password
-app.post(['/api/admin/change-password', '/admin/change-password'], requireAdmin, (req, res) => {
+app.post('/api/admin/change-password', requireAdmin, (req, res) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;
     const adminId = req.session.admin.id;
@@ -194,7 +206,7 @@ app.post(['/api/admin/change-password', '/admin/change-password'], requireAdmin,
 });
 
 // Admin Logout
-app.post(['/api/admin/logout', '/admin/logout'], (req, res) => {
+app.post('/api/admin/logout', (req, res) => {
   delete req.session.admin;
   return res.json({ success: true, message: 'Logged out successfully.' });
 });
@@ -204,7 +216,7 @@ app.post(['/api/admin/logout', '/admin/logout'], (req, res) => {
 // ==========================================
 
 // User Register
-app.post(['/api/user/register', '/user/register'], (req, res) => {
+app.post('/api/user/register', (req, res) => {
   try {
     const { name, email, phone, password, address, city, state, pincode } = req.body;
 
@@ -245,7 +257,7 @@ app.post(['/api/user/register', '/user/register'], (req, res) => {
 });
 
 // User Login
-app.post(['/api/user/login', '/user/login'], (req, res) => {
+app.post('/api/user/login', (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -287,7 +299,7 @@ app.post(['/api/user/login', '/user/login'], (req, res) => {
 });
 
 // User Get Current Profile
-app.get(['/api/user/me', '/user/me'], (req, res) => {
+app.get('/api/user/me', (req, res) => {
   if (req.session && req.session.user) {
     const user = db.prepare('SELECT id, name, email, phone, address, city, state, pincode, created_at FROM users WHERE id = ?').get(req.session.user.id);
     if (user) {
@@ -298,7 +310,7 @@ app.get(['/api/user/me', '/user/me'], (req, res) => {
 });
 
 // User Update Profile
-app.put(['/api/user/profile', '/user/profile'], requireUser, (req, res) => {
+app.put('/api/user/profile', requireUser, (req, res) => {
   try {
     const { name, phone, address, city, state, pincode } = req.body;
     const userId = req.session.user.id;
@@ -326,7 +338,7 @@ app.put(['/api/user/profile', '/user/profile'], requireUser, (req, res) => {
 });
 
 // User Logout
-app.post(['/api/user/logout', '/user/logout'], (req, res) => {
+app.post('/api/user/logout', (req, res) => {
   delete req.session.user;
   return res.json({ success: true, message: 'User logged out.' });
 });
@@ -336,7 +348,7 @@ app.post(['/api/user/logout', '/user/logout'], (req, res) => {
 // ==========================================
 
 // Get All Products (with filters)
-app.get(['/api/products', '/products'], (req, res) => {
+app.get('/api/products', (req, res) => {
   try {
     const { category, search, featured, sort } = req.query;
     let query = 'SELECT * FROM products WHERE 1=1';
@@ -378,7 +390,7 @@ app.get(['/api/products', '/products'], (req, res) => {
 });
 
 // Get Single Product
-app.get(['/api/products/:id', '/products/:id'], (req, res) => {
+app.get('/api/products/:id', (req, res) => {
   try {
     const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
     if (!product) {
@@ -392,7 +404,7 @@ app.get(['/api/products/:id', '/products/:id'], (req, res) => {
 });
 
 // Admin Add Product
-app.post(['/api/admin/products', '/admin/products'], requireAdmin, (req, res) => {
+app.post('/api/admin/products', requireAdmin, (req, res) => {
   try {
     const {
       title,
@@ -443,7 +455,7 @@ app.post(['/api/admin/products', '/admin/products'], requireAdmin, (req, res) =>
 });
 
 // Admin Update Product
-app.put(['/api/admin/products/:id', '/admin/products/:id'], requireAdmin, (req, res) => {
+app.put('/api/admin/products/:id', requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -503,7 +515,7 @@ app.put(['/api/admin/products/:id', '/admin/products/:id'], requireAdmin, (req, 
 });
 
 // Admin Delete Product
-app.delete(['/api/admin/products/:id', '/admin/products/:id'], requireAdmin, (req, res) => {
+app.delete('/api/admin/products/:id', requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const existing = db.prepare('SELECT id FROM products WHERE id = ?').get(id);
@@ -520,7 +532,7 @@ app.delete(['/api/admin/products/:id', '/admin/products/:id'], requireAdmin, (re
 });
 
 // Image Upload Endpoint (via Multer)
-app.post(['/api/admin/upload', '/admin/upload'], requireAdmin, upload.single('image'), (req, res) => {
+app.post('/api/admin/upload', requireAdmin, upload.single('image'), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded.' });
@@ -541,7 +553,7 @@ app.post(['/api/admin/upload', '/admin/upload'], requireAdmin, upload.single('im
 // ==========================================
 
 // Create Buy Order / Inquiry
-app.post(['/api/orders/buy', '/orders/buy'], (req, res) => {
+app.post('/api/orders/buy', (req, res) => {
   try {
     const {
       product_id,
@@ -652,7 +664,7 @@ app.post(['/api/orders/buy', '/orders/buy'], (req, res) => {
 });
 
 // Track Order publicly with Order Code & Phone
-app.get(['/api/orders/track', '/orders/track'], (req, res) => {
+app.get('/api/orders/track', (req, res) => {
   try {
     const { code, phone } = req.query;
     if (!code) {
@@ -691,7 +703,7 @@ app.get(['/api/orders/track', '/orders/track'], (req, res) => {
 });
 
 // User's own orders
-app.get(['/api/user/orders', '/user/orders'], requireUser, (req, res) => {
+app.get('/api/user/orders', requireUser, (req, res) => {
   try {
     const userId = req.session.user.id;
     const userEmail = req.session.user.email;
@@ -717,7 +729,7 @@ app.get(['/api/user/orders', '/user/orders'], requireUser, (req, res) => {
 // ==========================================
 
 // Get all client orders for Admin Dashboard
-app.get(['/api/admin/orders', '/admin/orders'], requireAdmin, (req, res) => {
+app.get('/api/admin/orders', requireAdmin, (req, res) => {
   try {
     const { status, search } = req.query;
     let query = `
@@ -750,7 +762,7 @@ app.get(['/api/admin/orders', '/admin/orders'], requireAdmin, (req, res) => {
 });
 
 // Export Orders to CSV for Postal / Courier Dispatch
-app.get(['/api/admin/orders/export/csv', '/admin/orders/export/csv'], requireAdmin, (req, res) => {
+app.get('/api/admin/orders/export/csv', requireAdmin, (req, res) => {
   try {
     const orders = db.prepare(`
       SELECT 
@@ -808,7 +820,7 @@ app.get(['/api/admin/orders/export/csv', '/admin/orders/export/csv'], requireAdm
 });
 
 // Admin Update Order Status
-app.put(['/api/admin/orders/:id/status', '/admin/orders/:id/status'], requireAdmin, (req, res) => {
+app.put('/api/admin/orders/:id/status', requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
