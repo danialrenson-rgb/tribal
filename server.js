@@ -13,9 +13,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Ensure uploads folder exists
-const uploadsDir = path.join(__dirname, 'uploads');
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const uploadsDir = isServerless ? '/tmp/uploads' : path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+  try {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  } catch (e) {
+    // Read-only filesystem fallback
+  }
 }
 
 // Multer storage configuration for product image uploads
@@ -913,11 +918,15 @@ app.get(['/user', '/user.html', '/dashboard'], (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(`🌿 Tribal Community Product Platform Running!`);
-  console.log(`📍 URL: http://localhost:${PORT}`);
-  console.log(`🛡️ Admin Login: danialrenson@gmail.com / danial`);
-  console.log(`====================================================`);
-});
+if (!process.env.VERCEL && require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(`🌿 Tribal Community Product Platform Running!`);
+    console.log(`📍 URL: http://localhost:${PORT}`);
+    console.log(`🛡️ Admin Login: danialrenson@gmail.com / danial`);
+    console.log(`====================================================`);
+  });
+}
+
+module.exports = app;
 
