@@ -52,6 +52,18 @@ const upload = multer({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Vercel serverless path normalizer (ensures /products or /api/products always resolve)
+app.use((req, res, next) => {
+  if (!req.url.startsWith('/api') && !req.url.includes('.')) {
+    const apiRoots = ['products', 'orders', 'admin', 'user'];
+    const firstSegment = req.url.split('?')[0].split('/')[1];
+    if (apiRoots.includes(firstSegment)) {
+      req.url = '/api' + req.url;
+    }
+  }
+  next();
+});
+
 // Session management
 app.use(
   session({
