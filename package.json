@@ -1,0 +1,27 @@
+{
+  "name": "tribel",
+  "version": "1.0.0",
+  "description": "Tribal community product selling platform with admin and user dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test-direct.js"
+  },
+  "keywords": [
+    "tribal",
+    "fair-trade",
+    "handicrafts",
+    "indigenous-art",
+    "express"
+  ],
+  "author": "Danial Renson",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "express": "^5.3.0",
+    "express-session": "^1.19.0",
+    "multer": "^2.5.0"
+  }
+}

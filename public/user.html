@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard | VANATVA Tribal Community</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-[#faf8f5] text-stone-800 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-stone-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-amber-700 text-white flex items-center justify-center font-bold">
+          <i class="fa-solid fa-feather-pointed"></i>
+        </div>
+        <span class="text-xl font-bold font-serif text-stone-900">VANATVA</span>
+        <span class="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded font-medium ml-1">User Portal</span>
+      </a>
+
+      <div class="flex items-center gap-3">
+        <a href="/" class="text-xs sm:text-sm font-semibold text-stone-600 hover:text-stone-900 flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition">
+          <i class="fa-solid fa-store text-amber-700"></i>
+          <span>Shop Crafts</span>
+        </a>
+
+        <div id="userHeaderActions" class="hidden flex items-center gap-3">
+          <button onclick="handleUserLogout()" class="text-xs font-semibold text-rose-700 hover:text-rose-800 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition">
+            <i class="fa-solid fa-power-off mr-1"></i> Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- USER AUTH VIEW (Sign In / Register)       -->
+  <!-- ========================================== -->
+  <div id="userAuthSection" class="flex-1 flex items-center justify-center p-4 py-12">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-xl border border-stone-200 animate-in fade-in duration-200">
+      
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl mx-auto mb-3">
+          <i class="fa-regular fa-user"></i>
+        </div>
+        <h2 id="authHeading" class="text-2xl font-bold font-serif text-stone-900">Welcome, Supporter</h2>
+        <p class="text-xs text-stone-500 mt-1">Access your purchase inquiries and delivery tracking</p>
+      </div>
+
+      <!-- Auth Switch Tabs -->
+      <div class="flex rounded-xl bg-stone-100 p-1 mb-6 text-xs font-bold">
+        <button 
+          id="tabBtnSignIn"
+          onclick="toggleAuthMode('login')" 
+          class="flex-1 py-2 rounded-lg bg-white text-stone-900 shadow-sm transition"
+        >
+          Sign In
+        </button>
+        <button 
+          id="tabBtnSignUp"
+          onclick="toggleAuthMode('register')" 
+          class="flex-1 py-2 rounded-lg text-stone-500 hover:text-stone-900 transition"
+        >
+          Create Account
+        </button>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="userLoginForm" onsubmit="handleUserLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Email Address</label>
+          <input 
+            type="email" 
+            id="loginEmail" 
+            required 
+            placeholder="your.email@example.com" 
+            class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-800"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Password</label>
+          <input 
+            type="password" 
+            id="loginPassword" 
+            required 
+            placeholder="••••••••" 
+            class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-800"
+          >
+        </div>
+
+        <button 
+          type="submit" 
+          id="loginSubmitBtn"
+          class="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 rounded-xl transition text-sm shadow-md shadow-amber-800/20"
+        >
+          Sign In to Portal
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="userRegisterForm" onsubmit="handleUserRegister(event)" class="hidden space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Full Name *</label>
+          <input 
+            type="text" 
+            id="regName" 
+            required 
+            placeholder="Priya Sharma" 
+            class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-amber-800"
+          >
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Email *</label>
+            <input 
+              type="email" 
+              id="regEmail" 
+              required 
+              placeholder="priya@example.com" 
+              class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-800"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Phone Number</label>
+            <input 
+              type="tel" 
+              id="regPhone" 
+              placeholder="+91 9876543210" 
+              class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-800"
+            >
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Create Password *</label>
+          <input 
+            type="password" 
+            id="regPassword" 
+            required 
+            minlength="4"
+            placeholder="At least 4 characters" 
+            class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-amber-800"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Default Shipping Address</label>
+          <textarea 
+            id="regAddress" 
+            rows="2" 
+            placeholder="House/Apartment, Street address" 
+            class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-800"
+          ></textarea>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <input type="text" id="regCity" placeholder="City" class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2 text-xs focus:outline-none">
+          </div>
+          <div>
+            <input type="text" id="regState" placeholder="State" class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2 text-xs focus:outline-none">
+          </div>
+          <div>
+            <input type="text" id="regPincode" placeholder="Pincode" class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2 text-xs focus:outline-none">
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          id="regSubmitBtn"
+          class="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-2.5 rounded-xl transition text-sm shadow-md mt-2"
+        >
+          Create User Account
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- USER DASHBOARD VIEW (Once Logged In)      -->
+  <!-- ========================================== -->
+  <main id="userDashboardView" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+    
+    <!-- Welcome User Banner -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-700">Fair Trade Supporter</span>
+        <h2 class="text-2xl sm:text-3xl font-bold font-serif text-stone-900 mt-1">
+          Welcome, <span id="userDisplayName">Friend</span>
+        </h2>
+        <p class="text-xs sm:text-sm text-stone-500 mt-1">
+          Track your handcraft orders and connect directly with tribal artisan coordinators.
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="/" class="px-4 py-2.5 bg-amber-800 hover:bg-amber-900 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md transition flex items-center gap-2">
+          <i class="fa-solid fa-basket-shopping"></i>
+          <span>Explore More Crafts</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- User Tabs -->
+    <div class="flex items-center gap-3 border-b border-stone-200 pb-2">
+      <button 
+        onclick="switchUserTab('orders')" 
+        id="userTabBtnOrders"
+        class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-stone-900 text-white shadow-sm flex items-center gap-2 transition"
+      >
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span>My Purchase Inquiries</span>
+        <span id="userOrdersCount" class="px-2 py-0.5 rounded-full text-xs bg-amber-500 text-stone-900 font-bold ml-1">0</span>
+      </button>
+
+      <button 
+        onclick="switchUserTab('profile')" 
+        id="userTabBtnProfile"
+        class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-stone-600 hover:text-stone-900 hover:bg-stone-200 flex items-center gap-2 transition"
+      >
+        <i class="fa-solid fa-address-card"></i>
+        <span>Saved Shipping Details</span>
+      </button>
+    </div>
+
+    <!-- USER TAB 1: MY ORDERS / INQUIRIES -->
+    <div id="userOrdersContainer" class="space-y-4">
+      <div id="userOrdersList" class="space-y-4">
+        <!-- Rendered via JS -->
+      </div>
+
+      <div id="userEmptyOrders" class="hidden text-center py-16 bg-white rounded-2xl border border-stone-200">
+        <div class="w-12 h-12 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center mx-auto mb-3 text-xl">
+          <i class="fa-solid fa-bag-shopping"></i>
+        </div>
+        <h4 class="font-bold text-stone-800 text-base">No Purchase Inquiries Placed Yet</h4>
+        <p class="text-xs text-stone-500 mt-1 max-w-sm mx-auto">Explore authentic tribal handicrafts in our catalog and click "Buy" to submit your inquiry directly.</p>
+        <a href="/" class="mt-4 inline-block px-4 py-2 bg-amber-800 text-white rounded-xl text-xs font-bold hover:bg-amber-900 transition">
+          Browse Handcrafts Catalog
+        </a>
+      </div>
+    </div>
+
+    <!-- USER TAB 2: PROFILE & SHIPPING ADDRESS -->
+    <div id="userProfileContainer" class="hidden bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm max-w-2xl">
+      <h3 class="text-lg font-bold font-serif text-stone-900 mb-1">Your Shipping Profile</h3>
+      <p class="text-xs text-stone-500 mb-6">These details auto-fill in the Buy Modal for seamless 1-click tribal inquiries.</p>
+
+      <form id="userProfileForm" onsubmit="handleUpdateProfile(event)" class="space-y-4 text-xs sm:text-sm">
+        <div>
+          <label class="block font-semibold text-stone-700 mb-1">Full Name</label>
+          <input type="text" id="profName" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-amber-800">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-stone-700 mb-1">Email (Account ID)</label>
+            <input type="email" id="profEmail" disabled class="w-full bg-stone-100 border border-stone-200 rounded-xl px-3.5 py-2 text-sm text-stone-500 cursor-not-allowed">
+          </div>
+          <div>
+            <label class="block font-semibold text-stone-700 mb-1">Phone / WhatsApp</label>
+            <input type="tel" id="profPhone" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-amber-800">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-stone-700 mb-1">Default Delivery Address</label>
+          <textarea id="profAddress" rows="2" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-amber-800"></textarea>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block font-semibold text-stone-700 mb-1">City</label>
+            <input type="text" id="profCity" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-semibold text-stone-700 mb-1">State</label>
+            <input type="text" id="profState" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-semibold text-stone-700 mb-1">Pincode</label>
+            <input type="text" id="profPincode" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs focus:outline-none">
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-stone-200">
+          <button type="submit" class="bg-amber-800 hover:bg-amber-900 text-white font-bold py-2.5 px-6 rounded-xl transition text-xs sm:text-sm shadow-md">
+            Save Profile Updates
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-stone-900 text-stone-400 py-6 border-t border-stone-800 text-center text-xs mt-auto">
+    <p>© 2026 VANATVA Tribal Community Craft Initiative. Empowering Indigenous Artisans.</p>
+  </footer>
+
+  <!-- Toast Notification Container -->
+  <div id="toast">
+    <i id="toastIcon" class="fa-solid fa-check"></i>
+    <span id="toastMessage">Action completed</span>
+  </div>
+
+  <!-- User JavaScript -->
+  <script src="/js/user.js"></script>
+</body>
+</html>
+

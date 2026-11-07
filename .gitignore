@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+package-lock.json.backup
+
+# SQLite Database & WAL files
+*.db
+*.db-shm
+*.db-wal
+tribal_store.db*
+
+# User uploads (keep directory with .gitkeep)
+uploads/*
+!uploads/.gitkeep
+
+# Environment & Config
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS Files
+Thumbs.db
+.DS_Store

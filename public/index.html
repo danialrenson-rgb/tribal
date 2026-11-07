@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANATVA | Authentic Tribal Community Handicrafts & Heritage</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-[#faf8f5] text-stone-800 flex flex-col min-h-screen">
+
+  <!-- Top Announcement Bar -->
+  <div class="bg-amber-800 text-amber-50 text-xs sm:text-sm py-2 px-4 text-center font-medium tracking-wide flex items-center justify-center gap-2">
+    <span>🌿 Supporting 500+ Indigenous Tribal Artisans & Self-Help Groups Directly</span>
+    <span class="hidden md:inline">•</span>
+    <span class="hidden md:inline">Zero Middlemen • No Online Payment Barrier • Direct Community Contact</span>
+  </div>
+
+  <!-- Main Navigation -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Logo / Brand -->
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="w-12 h-12 rounded-xl bg-amber-700 text-white flex items-center justify-center shadow-md shadow-amber-800/20 group-hover:bg-amber-800 transition">
+          <i class="fa-solid fa-feather-pointed text-2xl"></i>
+        </div>
+        <div>
+          <span class="text-2xl font-extrabold tracking-tight text-stone-900 font-serif">VANATVA</span>
+          <span class="block text-[10px] uppercase tracking-widest text-amber-700 font-bold -mt-1">Tribal Community Crafts</span>
+        </div>
+      </a>
+
+      <!-- Search bar (Desktop) -->
+      <div class="hidden lg:flex items-center flex-1 max-w-md mx-8">
+        <div class="relative w-full">
+          <input 
+            type="text" 
+            id="searchInput"
+            placeholder="Search tribal art, dhokra, warli, honey, shawls..." 
+            class="w-full bg-stone-100/80 border border-stone-200 rounded-full py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-amber-700/30 focus:border-amber-700 transition"
+          >
+          <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-stone-400 text-sm"></i>
+        </div>
+      </div>
+
+      <!-- Navigation Actions -->
+      <div class="flex items-center gap-3 sm:gap-4">
+        <!-- Track Order Button -->
+        <button 
+          onclick="openTrackModal()" 
+          class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-stone-700 hover:text-amber-800 hover:bg-stone-100 rounded-lg transition"
+          title="Track your order status"
+        >
+          <i class="fa-solid fa-truck-fast text-amber-700"></i>
+          <span class="hidden sm:inline">Track Order</span>
+        </button>
+
+        <!-- User Portal Button -->
+        <a 
+          href="/user.html" 
+          class="flex items-center gap-2 px-3.5 py-2 text-sm font-medium text-stone-700 hover:text-amber-800 hover:bg-stone-100 rounded-lg transition"
+          id="userNavBtn"
+        >
+          <i class="fa-regular fa-user text-stone-600"></i>
+          <span class="hidden sm:inline">User Portal</span>
+        </a>
+
+        <!-- Admin Dashboard Button -->
+        <a 
+          href="/admin.html" 
+          class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-stone-900 hover:bg-stone-800 rounded-lg shadow-sm transition"
+        >
+          <i class="fa-solid fa-shield-halved text-amber-400"></i>
+          <span>Admin Portal</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Mobile Search Bar -->
+    <div class="lg:hidden px-4 pb-3">
+      <div class="relative w-full">
+        <input 
+          type="text" 
+          id="searchInputMobile"
+          placeholder="Search tribal art, dhokra, shawls..." 
+          class="w-full bg-stone-100 border border-stone-200 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-amber-700"
+        >
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-stone-400 text-sm"></i>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="tribal-pattern-bg text-white py-14 sm:py-20 relative overflow-hidden">
+    <!-- Decorative background tribal circles -->
+    <div class="absolute -right-20 -bottom-20 w-96 h-96 rounded-full border border-emerald-600/30 pointer-events-none"></div>
+    <div class="absolute -left-20 -top-20 w-80 h-80 rounded-full border border-emerald-500/20 pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-900/80 border border-emerald-600/50 text-emerald-200 text-xs font-semibold uppercase tracking-wider mb-5">
+          <i class="fa-solid fa-leaf text-amber-400"></i> Indigenous Handcrafts • Direct Fair Trade
+        </div>
+        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold font-serif leading-tight text-white mb-6">
+          Ancient Heritage, <br>
+          <span class="text-amber-400 italic">Handcrafted with Soul.</span>
+        </h1>
+        <p class="text-base sm:text-lg text-emerald-100/90 leading-relaxed mb-8 max-w-2xl">
+          Support authentic tribal artisan communities across India. Order directly without online payment complications—simply click <strong class="text-white">Buy</strong> to submit your purchase inquiry, and our community coordinators connect with you directly.
+        </p>
+
+        <!-- Trust Badges -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-emerald-700/50 text-xs sm:text-sm">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-hands-holding-child text-amber-400 text-lg"></i>
+            <span>100% Direct Payout</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-certificate text-amber-400 text-lg"></i>
+            <span>GI-Tagged Heritage</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-wallet text-amber-400 text-lg"></i>
+            <span>No Upfront Gateway</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fa-brands fa-whatsapp text-amber-400 text-lg"></i>
+            <span>Direct WhatsApp Help</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Section -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
+    
+    <!-- Filter & Sort Bar -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <!-- Category Pills -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none" id="categoryContainer">
+        <button 
+          onclick="filterCategory('All')" 
+          class="category-btn active px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition bg-amber-800 text-white shadow-sm"
+          data-category="All"
+        >
+          All Handcrafts
+        </button>
+        <!-- Populated via JS -->
+      </div>
+
+      <!-- Sort & Active Count -->
+      <div class="flex items-center justify-between md:justify-end gap-3 shrink-0">
+        <span class="text-xs text-stone-500 font-medium" id="productsCountText">Loading crafts...</span>
+        <select 
+          id="sortSelect" 
+          onchange="applySort(this.value)"
+          class="bg-white border border-stone-200 text-stone-700 text-xs sm:text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-700 font-medium"
+        >
+          <option value="featured">Featured First</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+      <!-- Loading Skeleton -->
+      <div class="animate-pulse bg-white rounded-2xl p-4 border border-stone-200 h-96"></div>
+      <div class="animate-pulse bg-white rounded-2xl p-4 border border-stone-200 h-96"></div>
+      <div class="animate-pulse bg-white rounded-2xl p-4 border border-stone-200 h-96"></div>
+      <div class="animate-pulse bg-white rounded-2xl p-4 border border-stone-200 h-96"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-20 bg-white rounded-2xl border border-stone-200 my-8">
+      <div class="w-16 h-16 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center mx-auto mb-4 text-2xl">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </div>
+      <h3 class="text-lg font-bold text-stone-800">No Tribal Products Found</h3>
+      <p class="text-sm text-stone-500 mt-1 max-w-sm mx-auto">Try clearing your search query or choosing another category filter.</p>
+      <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-amber-800 text-white rounded-lg text-sm font-medium hover:bg-amber-900 transition">
+        Reset Filters
+      </button>
+    </div>
+
+    <!-- How Ordering Works Banner -->
+    <section class="mt-20 bg-stone-100 rounded-3xl p-8 sm:p-12 border border-stone-200/80">
+      <div class="text-center max-w-2xl mx-auto mb-10">
+        <span class="text-xs font-bold uppercase tracking-widest text-amber-700">Simple & Ethical Fair Trade</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold font-serif text-stone-900 mt-2">How Purchasing From Artisans Works</h2>
+        <p class="text-sm text-stone-600 mt-2">No complicated payment gateway required. We maintain direct personal communication to ensure authenticity and artisan dignity.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+        <div class="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm relative">
+          <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 font-bold flex items-center justify-center mb-4">1</div>
+          <h3 class="font-bold text-stone-900 text-base mb-2">Select Craft & Click Buy</h3>
+          <p class="text-xs sm:text-sm text-stone-600 leading-relaxed">Choose your authentic tribal masterpiece and click "Buy Direct". Enter your name, phone, email, and delivery address.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm relative">
+          <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 font-bold flex items-center justify-center mb-4">2</div>
+          <h3 class="font-bold text-stone-900 text-base mb-2">Admin Dashboard Receives Inquiry</h3>
+          <p class="text-xs sm:text-sm text-stone-600 leading-relaxed">Your order and client details are routed instantly to our tribal admin dashboard, where community managers verify stock.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm relative">
+          <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 font-bold flex items-center justify-center mb-4">3</div>
+          <h3 class="font-bold text-stone-900 text-base mb-2">Direct Contact & Safe Delivery</h3>
+          <p class="text-xs sm:text-sm text-stone-600 leading-relaxed">Our coordinator contacts you via WhatsApp or phone call to confirm delivery address, dispatch schedule, and direct artisan payment.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- BUY MODAL (PRIMARY REQUIREMENT) -->
+  <!-- Captures Name, Phone, Email, Delivery details, and sends to Admin -->
+  <!-- ============================================================== -->
+  <div id="buyModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-backdrop overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-stone-200 my-8 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Modal Header -->
+      <div class="bg-stone-900 text-white p-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-amber-700 flex items-center justify-center text-white text-sm">
+            <i class="fa-solid fa-bag-shopping"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-white">Direct Artisan Purchase</h3>
+            <p class="text-xs text-stone-400">Zero upfront payment required • Direct coordinator contact</p>
+          </div>
+        </div>
+        <button onclick="closeBuyModal()" class="w-8 h-8 rounded-full bg-stone-800 text-stone-400 hover:text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 overflow-y-auto flex-1 space-y-6">
+
+        <!-- Selected Product Overview Card -->
+        <div class="bg-stone-50 border border-stone-200 rounded-2xl p-4 flex gap-4 items-center">
+          <img id="buyModalImage" src="" alt="Product" class="w-20 h-20 object-cover rounded-xl border border-stone-200 shrink-0">
+          <div class="flex-1 min-w-0">
+            <span id="buyModalTribe" class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 mb-1">Tribe</span>
+            <h4 id="buyModalTitle" class="font-bold text-stone-900 text-sm truncate">Product Name</h4>
+            <div class="flex items-center justify-between mt-2">
+              <span id="buyModalPrice" class="text-base font-extrabold text-amber-800">₹0</span>
+              <div class="flex items-center gap-2 bg-white border border-stone-200 rounded-lg px-2 py-1">
+                <label for="buyQuantity" class="text-xs text-stone-500 font-medium">Qty:</label>
+                <select id="buyQuantity" onchange="updateBuyTotal()" class="text-xs font-bold text-stone-800 focus:outline-none">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Calculation Pill -->
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between text-xs sm:text-sm text-emerald-900">
+          <span class="font-medium flex items-center gap-1.5">
+            <i class="fa-solid fa-calculator text-emerald-600"></i> Estimated Total (Pay upon coordinator contact):
+          </span>
+          <span id="buyModalTotal" class="font-extrabold text-base text-emerald-800">₹0</span>
+        </div>
+
+        <!-- Client Details Form -->
+        <form id="buyOrderForm" onsubmit="handleBuySubmit(event)" class="space-y-4">
+          <input type="hidden" id="buyProductId" value="">
+
+          <div class="border-t border-stone-200 pt-4">
+            <h5 class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-address-card text-amber-700"></i> Client Contact & Shipping Details
+            </h5>
+
+            <!-- Client Name & Phone -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+              <div>
+                <label class="block text-xs font-semibold text-stone-700 mb-1">Your Full Name <span class="text-rose-600">*</span></label>
+                <input 
+                  type="text" 
+                  id="clientName" 
+                  required
+                  placeholder="e.g. Priya Sharma" 
+                  class="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700"
+                >
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-stone-700 mb-1">Phone / WhatsApp Number <span class="text-rose-600">*</span></label>
+                <input 
+                  type="tel" 
+                  id="clientPhone" 
+                  required
+                  placeholder="e.g. +91 9876543210" 
+                  class="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700"
+                >
+              </div>
+            </div>
+
+            <!-- Email Address -->
+            <div class="mb-3">
+              <label class="block text-xs font-semibold text-stone-700 mb-1">Email Address <span class="text-rose-600">*</span></label>
+              <input 
+                type="email" 
+                id="clientEmail" 
+                required
+                placeholder="e.g. priya.sharma@example.com" 
+                class="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700"
+              >
+            </div>
+
+            <!-- Delivery Address -->
+            <div class="mb-3">
+              <label class="block text-xs font-semibold text-stone-700 mb-1">Delivery Street Address <span class="text-rose-600">*</span></label>
+              <textarea 
+                id="clientAddress" 
+                rows="2" 
+                required
+                placeholder="House/Flat number, Street, Landmark" 
+                class="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700"
+              ></textarea>
+            </div>
+
+            <!-- City, State, Pincode -->
+            <div class="grid grid-cols-3 gap-2 mb-3">
+              <div>
+                <label class="block text-xs font-semibold text-stone-700 mb-1">City</label>
+                <input 
+                  type="text" 
+                  id="clientCity" 
+                  placeholder="e.g. Mumbai" 
+                  class="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-700"
+                >
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-stone-700 mb-1">State</label>
+                <input 
+                  type="text" 
+                  id="clientState" 
+                  placeholder="e.g. MH" 
+                  class="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-700"
+                >
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-stone-700 mb-1">Pincode</label>
+                <input 
+                  type="text" 
+                  id="clientPincode" 
+                  placeholder="e.g. 400001" 
+                  class="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-700"
+                >
+              </div>
+            </div>
+
+            <!-- Custom notes / instructions -->
+            <div>
+              <label class="block text-xs font-semibold text-stone-700 mb-1">Special Requests / Notes (Optional)</label>
+              <input 
+                type="text" 
+                id="clientNotes" 
+                placeholder="e.g. Gift wrapping or preferred contact time" 
+                class="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-amber-700"
+              >
+            </div>
+          </div>
+
+          <!-- Notification Notice -->
+          <div class="bg-amber-50 border border-amber-200/80 rounded-xl p-3 text-xs text-amber-900 flex items-start gap-2.5">
+            <i class="fa-solid fa-circle-info text-amber-700 mt-0.5 text-sm shrink-0"></i>
+            <div>
+              <strong>Instant routing to Admin:</strong> Once you click submit, your client info, contact details, and product request are recorded in our admin dashboard. Our team contacts you to verify before dispatch!
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-2">
+            <button 
+              type="submit" 
+              id="buySubmitBtn"
+              class="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-amber-800/20 flex items-center justify-center gap-2 transition"
+            >
+              <i class="fa-solid fa-paper-plane"></i>
+              <span>Confirm Purchase Request</span>
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ORDER SUCCESS CONFIRMATION MODAL -->
+  <!-- ============================================================== -->
+  <div id="orderSuccessModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-stone-200 text-center animate-in fade-in zoom-in-95 duration-200">
+      
+      <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 text-3xl flex items-center justify-center mx-auto mb-4">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+
+      <span class="text-xs uppercase font-bold tracking-widest text-emerald-800">Order Inquiry Received!</span>
+      <h3 class="text-2xl font-bold font-serif text-stone-900 mt-1">Thank You for Supporting Tribal Artisans</h3>
+      
+      <div class="bg-stone-50 border border-stone-200 rounded-2xl p-4 my-5 text-left text-xs sm:text-sm space-y-2">
+        <div class="flex justify-between items-center pb-2 border-b border-stone-200">
+          <span class="text-stone-500 font-medium">Order Reference Code:</span>
+          <span id="successOrderCode" class="font-mono font-bold text-base text-amber-800">TRB-000000</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-stone-500">Client Name:</span>
+          <span id="successClientName" class="font-semibold text-stone-800">Client Name</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-stone-500">Contact Number:</span>
+          <span id="successClientPhone" class="font-semibold text-stone-800">Phone</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-stone-500">Product:</span>
+          <span id="successProductTitle" class="font-semibold text-stone-800 truncate max-w-[200px]">Product</span>
+        </div>
+        <div class="flex justify-between items-center pt-2 border-t border-stone-200 text-stone-900 font-bold">
+          <span>Total Value:</span>
+          <span id="successTotalAmount" class="text-emerald-700 text-base">₹0</span>
+        </div>
+      </div>
+
+      <p class="text-xs text-stone-600 mb-6 leading-relaxed">
+        Your details have been successfully transmitted to the <strong>Admin Dashboard</strong>. Our community coordinator will reach out via WhatsApp or phone call to confirm dispatch.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button 
+          onclick="closeSuccessModal()" 
+          class="flex-1 px-4 py-2.5 rounded-xl border border-stone-300 text-stone-700 text-sm font-semibold hover:bg-stone-100 transition"
+        >
+          Continue Browsing
+        </button>
+        <button 
+          id="whatsAppBtn"
+          onclick="openWhatsAppInquiry()" 
+          class="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold flex items-center justify-center gap-2 transition shadow-md shadow-emerald-700/20"
+        >
+          <i class="fa-brands fa-whatsapp text-lg"></i>
+          <span>Chat on WhatsApp</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- PRODUCT STORY / DETAIL MODAL -->
+  <!-- ============================================================== -->
+  <div id="detailModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-backdrop overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-stone-200 my-8">
+      <div class="relative">
+        <img id="modalDetailImage" src="" alt="Detail" class="w-full h-72 sm:h-80 object-cover rounded-t-3xl">
+        <button onclick="closeDetailModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-stone-900/70 text-white hover:bg-stone-900 flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="absolute bottom-4 left-4">
+          <span id="modalDetailCategory" class="px-3 py-1 rounded-full text-xs font-bold bg-white/90 text-stone-900 shadow">Category</span>
+        </div>
+      </div>
+
+      <div class="p-6 sm:p-8 space-y-5">
+        <div>
+          <span id="modalDetailTribe" class="text-xs font-bold text-amber-700 tracking-wide uppercase">Tribe Origin</span>
+          <h2 id="modalDetailTitle" class="text-2xl font-bold font-serif text-stone-900 mt-1">Product Title</h2>
+          <div class="flex items-center gap-4 mt-3">
+            <span id="modalDetailPrice" class="text-2xl font-black text-amber-800">₹0</span>
+            <span id="modalDetailStock" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">In Stock</span>
+          </div>
+        </div>
+
+        <!-- Artisan & Heritage Card -->
+        <div class="bg-stone-50 border border-stone-200 rounded-2xl p-4 space-y-2">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-base">
+              <i class="fa-solid fa-hand-holding-heart"></i>
+            </div>
+            <div>
+              <h5 class="text-xs font-bold uppercase text-stone-400">Master Artisan</h5>
+              <p id="modalDetailArtisan" class="text-sm font-bold text-stone-900">Artisan Name</p>
+            </div>
+          </div>
+          <div class="text-xs text-stone-600 flex items-center gap-2 pt-1 border-t border-stone-200">
+            <i class="fa-solid fa-location-dot text-amber-700"></i>
+            <span id="modalDetailLocation">Location</span>
+          </div>
+          <div class="text-xs text-amber-900 bg-amber-50 rounded-lg p-2.5 font-medium">
+            <i class="fa-solid fa-award text-amber-700 mr-1.5"></i>
+            <span id="modalDetailHeritage">Heritage Craft</span>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-bold text-stone-900 mb-2">About This Handcraft</h4>
+          <p id="modalDetailDescription" class="text-sm text-stone-600 leading-relaxed whitespace-pre-line">Description</p>
+        </div>
+
+        <!-- Buy Button inside Detail Modal -->
+        <div class="pt-4 border-t border-stone-200 flex gap-3">
+          <button 
+            id="modalDetailBuyBtn"
+            onclick="" 
+            class="flex-1 bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-amber-800/20 flex items-center justify-center gap-2 transition"
+          >
+            <i class="fa-solid fa-bag-shopping"></i>
+            <span>Buy Directly From Artisan</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- TRACK ORDER MODAL -->
+  <!-- ============================================================== -->
+  <div id="trackModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95 duration-200">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-stone-200">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
+            <i class="fa-solid fa-magnifying-glass-location"></i>
+          </div>
+          <h3 class="font-bold text-lg text-stone-900">Track Your Order Status</h3>
+        </div>
+        <button onclick="closeTrackModal()" class="text-stone-400 hover:text-stone-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="mt-5 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-stone-700 mb-1">Order Reference Code <span class="text-rose-600">*</span></label>
+          <input 
+            type="text" 
+            id="trackOrderCodeInput" 
+            placeholder="e.g. TRB-748921" 
+            class="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm uppercase font-mono tracking-wider focus:outline-none focus:border-amber-700"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-stone-700 mb-1">Registered Phone or Email (Optional for verification)</label>
+          <input 
+            type="text" 
+            id="trackPhoneInput" 
+            placeholder="e.g. 9876543210 or your email" 
+            class="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-700"
+          >
+        </div>
+
+        <button 
+          onclick="lookupOrderTracking()" 
+          class="w-full bg-stone-900 hover:bg-stone-800 text-white font-bold py-2.5 rounded-xl text-sm transition"
+        >
+          Check Order Status
+        </button>
+
+        <!-- Tracking Results Container -->
+        <div id="trackResultContainer" class="hidden mt-4 pt-4 border-t border-stone-200 text-left">
+          <!-- Dynamic tracking card injected via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-stone-900 text-stone-300 pt-16 pb-12 border-t border-stone-800 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div class="space-y-4 md:col-span-1">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-700 text-white flex items-center justify-center font-bold">
+              <i class="fa-solid fa-feather-pointed"></i>
+            </div>
+            <span class="text-xl font-bold tracking-tight text-white font-serif">VANATVA</span>
+          </div>
+          <p class="text-xs text-stone-400 leading-relaxed">
+            Preserving indigenous cultural craftsmanship and creating direct sustainable livelihoods for rural tribal artisan families.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Tribal Collectives</h4>
+          <ul class="text-xs space-y-2 text-stone-400">
+            <li>Bastar Dhokra Smiths (Chhattisgarh)</li>
+            <li>Warli Painting Guild (Maharashtra)</li>
+            <li>Kurumba Honey Gatherers (Nilgiris)</li>
+            <li>Toda High-Plateau Weavers (Tamil Nadu)</li>
+            <li>Gond Folk Artists (Madhya Pradesh)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Customer Support</h4>
+          <ul class="text-xs space-y-2 text-stone-400">
+            <li><a href="#" onclick="openTrackModal(); return false;" class="hover:text-amber-400 transition">Track Your Order</a></li>
+            <li><a href="/user.html" class="hover:text-amber-400 transition">User Dashboard & Orders</a></li>
+            <li>Direct WhatsApp Inquiry Assistance</li>
+            <li>Zero Payment Processing Fees</li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Administration</h4>
+          <p class="text-xs text-stone-400 mb-3">
+            Admin access is available for community coordinators to process client inquiries.
+          </p>
+          <a href="/admin.html" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-stone-800 text-amber-400 text-xs font-semibold hover:bg-stone-700 transition">
+            <i class="fa-solid fa-lock"></i>
+            <span>Admin Control Panel</span>
+          </a>
+          <div class="mt-3 text-[11px] text-stone-500 bg-stone-950 p-2.5 rounded-lg border border-stone-800">
+            <span>Default Login:</span><br>
+            <code class="text-stone-300">danialrenson@gmail.com</code> / <code class="text-stone-300">danial</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-8 border-t border-stone-800 text-center text-xs text-stone-500 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p>© 2026 VANATVA Tribal Community Craft Initiative. All rights reserved.</p>
+        <p class="flex items-center gap-2">
+          <span>Crafted with</span>
+          <i class="fa-solid fa-heart text-amber-500"></i>
+          <span>for Indigenous Heritage</span>
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification Container -->
+  <div id="toast">
+    <i id="toastIcon" class="fa-solid fa-check"></i>
+    <span id="toastMessage">Action completed</span>
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script src="/js/main.js"></script>
+</body>
+</html>
+
